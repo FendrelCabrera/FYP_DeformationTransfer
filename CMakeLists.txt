@@ -54,6 +54,11 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
 	<igl/unproject.h>
 	<igl/unproject_onto_mesh.h>
 	<iostream>
+  <vector>
+  <algorithm>
+  <utility>
+  <map>
+  <igl/heat_geodesics.h>
 )
 set(CMAKE_C_COMPILER_LAUNCHER ccache)
 set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
