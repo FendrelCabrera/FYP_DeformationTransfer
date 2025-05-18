@@ -8,7 +8,7 @@ Eigen::Vector3d estimate_force_vector(
     double mu = 1.0,
     double nu = 0.4);
 
-std::vector<std::pair<Eigen::RowVector3d, Eigen::Vector3d>> find_impacts_and_forces(
+std::vector<std::pair<int, Eigen::Vector3d>> find_impacts_and_forces(
     const Eigen::MatrixXd &V_init,
     const Eigen::MatrixXd &V_final,
     double epsilon = 1e-1,

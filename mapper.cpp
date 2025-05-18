@@ -3,6 +3,7 @@
 #include <utility>
 #include <map>
 #include <igl/heat_geodesics.h>
+#include <chrono>
 
 class Mapper
 {
@@ -17,31 +18,19 @@ private:
     void addCol(int mid, int vid)
     {
         Eigen::VectorXd d;
-        // Eigen::VectorXi VS, FS, VT, FT;
-        // FS.resize(1);
-        // FS << key;
-
         Eigen::VectorXi VS;
         VS.resize(1);
 
         if (mid == 0)
         {
-            // FT.setLinSpaced(F1.rows(), 0, F1.rows() - 1);
-            // igl::exact_geodesic(V1, F1, VS, FS, VT, FT, d);
-
             igl::heat_geodesics_solve(heat_data1, (Eigen::VectorXi(1, 1) << vid).finished(), d);
-            std::cout << "DV1 size: " << d.rows() << " * " << d.cols() << std::endl;
 
             dm1.conservativeResize(V1.rows(), dm1.cols() + 1);
             dm1.col(dm1.cols() - 1) = d;
         }
         else
         {
-            // FT.setLinSpaced(F2.rows(), 0, F2.rows() - 1);
-            // igl::exact_geodesic(V2, F2, VS, FS, VT, FT, d);
-
             igl::heat_geodesics_solve(heat_data2, (Eigen::VectorXi(1, 1) << vid).finished(), d);
-            std::cout << "DV2 size: " << d.rows() << " * " << d.cols() << std::endl;
 
             dm2.conservativeResize(V2.rows(), dm2.cols() + 1);
             dm2.col(dm2.cols() - 1) = d;
@@ -119,15 +108,22 @@ private:
             auto coFace = g2[coIndex][percent * g2[coIndex].size()].second;
             cmap[i] = coFace;
         }
+        latestCmap = true;
     };
 
 public:
     Mapper(Eigen::MatrixXd &V1, Eigen::MatrixXi &F1, Eigen::MatrixXd &V2, Eigen::MatrixXi &F2) : V1(V1), V2(V2), F1(F1), F2(F2)
     {
+        auto start = std::chrono::high_resolution_clock::now();
         igl::heat_geodesics_precompute(V1, F1, heat_data1);
-        std::cout << "M1 precompute complete" << std::endl;
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        std::cout << "Geodesic distance precomputation time for mesh 1: " << elapsed.count() << "ms" << std::endl;
+        start = std::chrono::high_resolution_clock::now();
         igl::heat_geodesics_precompute(V2, F2, heat_data2);
-        std::cout << "M2 precompute complete" << std::endl;
+        end = std::chrono::high_resolution_clock::now();
+        elapsed = end - start;
+        std::cout << "Geodesic distance precomputation time for mesh 2: " << elapsed.count() << "ms" << std::endl;
     }
 
     int findClosestVertex(
@@ -197,8 +193,6 @@ public:
             rmap.push_back({value, 1});
             addCol(1, value);
         }
-
-        // updateCM();
     }
 
     int get(int key)
@@ -229,8 +223,6 @@ public:
             delCol(0, i1 - fmap.begin());
             fmap.erase(i1);
         }
-
-        // updateCM();
     }
 
     void clear()
@@ -254,7 +246,13 @@ public:
     int corr(int key)
     {
         if (!latestCmap)
+        {
+            auto start = std::chrono::high_resolution_clock::now();
             updateCM();
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> elapsed = end - start;
+            std::cout << "Time taken to calculate correspondence mapping: " << elapsed.count() << "ms" << std::endl;
+        }
         if (cmap.size() != V1.rows())
             cmap.resize(V1.rows(), -1);
         return cmap[key];

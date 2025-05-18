@@ -130,7 +130,7 @@ Eigen::MatrixXd impactPoints(
     return P;
 }
 
-std::vector<std::pair<Eigen::RowVector3d, Eigen::Vector3d>> find_impacts_and_forces(
+std::vector<std::pair<int, Eigen::Vector3d>> find_impacts_and_forces(
     const Eigen::MatrixXd &Ov,
     const Eigen::MatrixXd &V,
     double epsilon,
@@ -144,7 +144,7 @@ std::vector<std::pair<Eigen::RowVector3d, Eigen::Vector3d>> find_impacts_and_for
 
     // std::vector<std::vector<int>> adjacency = build_vertex_adjacency(F, n);
 
-    std::vector<std::pair<Eigen::RowVector3d, Eigen::Vector3d>> results;
+    std::vector<std::pair<int, Eigen::Vector3d>> results;
 
     // auto P = impactPoints(V_init, V_final);
     // int n = P.rows();
@@ -199,7 +199,7 @@ std::vector<std::pair<Eigen::RowVector3d, Eigen::Vector3d>> find_impacts_and_for
             // P.row(count++) = candidate;
             // if (count >= 5) // Limit to 10 points
             //     break;
-            results.push_back({candidate, pair.second});
+            results.push_back({idx, pair.second});
         }
     }
 
